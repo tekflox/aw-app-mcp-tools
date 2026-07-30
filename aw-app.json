@@ -56,6 +56,16 @@
     },
     "required": []
   },
-  "dependencies": {},
+  "dependencies": {
+    "apps": [
+      {
+        "id": "mcp-gateway",
+        "version": ">=0.1.0",
+        "required": true,
+        "reason": "MCP Tools contributes mcp.json definitions that are discovered and merged by the MCP Gateway app."
+      }
+    ],
+    "note": "Runtime-enforced app dependency: aw-workspace installs/loads mcp-gateway before mcp-tools so the gateway can scan mcp-tools/mcp.json."
+  },
   "migrations": {}
 }
