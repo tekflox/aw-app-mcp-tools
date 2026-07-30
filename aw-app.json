@@ -1,0 +1,61 @@
+{
+  "manifest_version": 1,
+  "id": "mcp-tools",
+  "name": "MCP Tools",
+  "version": "0.1.0",
+  "description": "Installs MCP helper tools for Agentic Workspace, starting with Playwright MCP wrappers and a ready-to-use mcp.json for shared and isolated browser automation.",
+  "tier": "inprocess",
+  "requires_ui_refresh": true,
+  "publisher": "TekFlox",
+  "resource_estimate": {
+    "cpu": "low",
+    "memory": "low",
+    "disk": "low"
+  },
+  "runtime": {
+    "python": ">=3.11",
+    "entrypoint": "mcp_tools_app.plugin:McpToolsAppPlugin",
+    "pip_requires": [],
+    "standalone": {
+      "module": "mcp_tools_app",
+      "default_port": 9406
+    }
+  },
+  "permissions": [
+    "commands:install",
+    "fs:workspace-data",
+    "routes:register",
+    "ui:code",
+    "ui:slots:core.nav"
+  ],
+  "contributes": {
+    "system_clis": [
+      {
+        "name": "aw-playwright-mcp",
+        "installer": "scripts/install_playwright_mcp.sh"
+      }
+    ],
+    "routes": [
+      {
+        "prefix": "/api/apps/mcp-tools"
+      }
+    ],
+    "frontend": {
+      "mode": "component",
+      "bundle": "ui/dist/mcp-tools.js"
+    }
+  },
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "playwright_cdp_endpoint": {
+        "type": "string",
+        "default": "http://localhost:9223",
+        "description": "CDP endpoint used by aw-playwright-mcp for the shared AW browser."
+      }
+    },
+    "required": []
+  },
+  "dependencies": {},
+  "migrations": {}
+}

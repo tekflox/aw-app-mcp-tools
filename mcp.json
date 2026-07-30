@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "enabled": true,
+      "type": "stdio",
+      "command": "aw-playwright-mcp",
+      "args": []
+    },
+    "playwright-local": {
+      "enabled": true,
+      "type": "stdio",
+      "command": "aw-playwright-local-mcp",
+      "args": []
+    }
+  }
+}
