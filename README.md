@@ -29,6 +29,10 @@ The installed config uses the wrapper commands, so clients can add:
 }
 ```
 
+The checked-in `mcp.json` is the same file the installer copies into the
+workspace app data directory, so updates to the bundled MCP config travel
+through normal app releases.
+
 ## Development
 
 ```bash
