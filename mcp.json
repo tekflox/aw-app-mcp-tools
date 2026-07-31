@@ -10,6 +10,15 @@
         "--cdp-endpoint",
         "http://aw-app-browser:9223"
       ]
+    },
+    "mcp-tools-echo": {
+      "enabled": true,
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "-m",
+        "mcp_tools_app.echo_server"
+      ]
     }
   }
 }

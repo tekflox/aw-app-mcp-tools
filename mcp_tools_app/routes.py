@@ -14,10 +14,11 @@ def build_routes() -> FastAPI:
 
     @app.get("/status")
     async def status() -> dict:
+        current = json.loads(MCP_CONFIG.read_text(encoding="utf-8"))
         return {
             "app": "mcp-tools",
-            "tools": ["playwright"],
-            "config": json.loads(MCP_CONFIG.read_text(encoding="utf-8")),
+            "tools": list(current.get("mcpServers", {})),
+            "config": current,
         }
 
     @app.get("/mcp.json")
