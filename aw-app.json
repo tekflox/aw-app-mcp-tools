@@ -3,7 +3,7 @@
   "id": "mcp-tools",
   "name": "MCP Tools",
   "version": "0.3.0",
-  "description": "Installs MCP helper tools for Agentic Workspace, starting with Playwright MCP wrappers and a ready-to-use mcp.json for shared and isolated browser automation.",
+  "description": "Installs MCP helper tools for Agentic Workspace, starting with a ready-to-use Playwright MCP config for shared browser automation.",
   "tier": "inprocess",
   "requires_ui_refresh": true,
   "publisher": "TekFlox",
@@ -50,8 +50,8 @@
     "properties": {
       "playwright_cdp_endpoint": {
         "type": "string",
-        "default": "http://localhost:9223",
-        "description": "CDP endpoint used by aw-playwright-mcp for the shared AW browser."
+        "default": "http://aw-app-browser:9223",
+        "description": "CDP endpoint used by Playwright MCP for the shared AW browser from inside the MCP Gateway container."
       }
     },
     "required": []

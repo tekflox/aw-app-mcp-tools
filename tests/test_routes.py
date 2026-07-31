@@ -17,12 +17,14 @@ def test_status():
     assert resp.status_code == 200
     body = resp.json()
     assert body["app"] == "mcp-tools"
-    assert body["tools"] == ["playwright", "playwright-local"]
-    assert body["config"]["mcpServers"]["playwright"]["command"] == "aw-playwright-mcp"
+    assert body["tools"] == ["playwright"]
+    assert body["config"]["mcpServers"]["playwright"]["command"] == "npx"
+    assert "http://aw-app-browser:9223" in body["config"]["mcpServers"]["playwright"]["args"]
 
 
 def test_mcp_json():
     client = TestClient(build_routes())
     resp = client.get("/mcp.json")
     assert resp.status_code == 200
-    assert "playwright-local" in resp.json()["mcpServers"]
+    assert "playwright" in resp.json()["mcpServers"]
+    assert "playwright-local" not in resp.json()["mcpServers"]

@@ -16,7 +16,7 @@ def build_routes() -> FastAPI:
     async def status() -> dict:
         return {
             "app": "mcp-tools",
-            "tools": ["playwright", "playwright-local"],
+            "tools": ["playwright"],
             "config": json.loads(MCP_CONFIG.read_text(encoding="utf-8")),
         }
 

@@ -13,15 +13,9 @@ cp "$APP_ROOT/mcp.json" "$MCP_CONFIG"
 cat > "$AW_BIN_DIR/aw-playwright-mcp" <<'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
-exec npx -y @playwright/mcp@0.0.77 --cdp-endpoint "${AW_PLAYWRIGHT_CDP_ENDPOINT:-http://localhost:9223}" "$@"
+exec npx -y @playwright/mcp@0.0.77 --cdp-endpoint "${AW_PLAYWRIGHT_CDP_ENDPOINT:-http://aw-app-browser:9223}" "$@"
 SCRIPT
 
-cat > "$AW_BIN_DIR/aw-playwright-local-mcp" <<'SCRIPT'
-#!/usr/bin/env bash
-set -euo pipefail
-exec npx -y @playwright/mcp@0.0.77 --isolated "$@"
-SCRIPT
-
-chmod +x "$AW_BIN_DIR/aw-playwright-mcp" "$AW_BIN_DIR/aw-playwright-local-mcp"
+chmod +x "$AW_BIN_DIR/aw-playwright-mcp"
 
 echo "Playwright MCP config installed at $MCP_CONFIG"

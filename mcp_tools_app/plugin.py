@@ -16,7 +16,7 @@ class McpToolsAppPlugin:
 
         cdp_endpoint = (
             (getattr(ctx, "config", {}) or {}).get("playwright_cdp_endpoint")
-            or "http://localhost:9223"
+            or "http://aw-app-browser:9223"
         )
         os.environ["AW_PLAYWRIGHT_CDP_ENDPOINT"] = str(cdp_endpoint)
 

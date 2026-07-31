@@ -12,12 +12,12 @@ bash scripts/install_playwright_mcp.sh
 echo "== wrapper resolution =="
 export PATH="$AW_BIN_DIR:$PATH"
 which aw-playwright-mcp
-which aw-playwright-local-mcp
 
 echo "== config =="
 test -f "$APP_DATA_DIR/mcp.json"
 grep -q '"playwright"' "$APP_DATA_DIR/mcp.json"
-grep -q '"aw-playwright-mcp"' "$APP_DATA_DIR/mcp.json"
+grep -q '"npx"' "$APP_DATA_DIR/mcp.json"
+grep -q '"http://aw-app-browser:9223"' "$APP_DATA_DIR/mcp.json"
 
 echo "== idempotency re-run =="
 bash scripts/install_playwright_mcp.sh
