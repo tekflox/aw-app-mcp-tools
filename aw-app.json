@@ -6,6 +6,7 @@
   "description": "Installs MCP helper tools for Agentic Workspace, starting with a ready-to-use Playwright MCP config for shared browser automation.",
   "tier": "inprocess",
   "requires_ui_refresh": true,
+  "category": "Tools",
   "publisher": "TekFlox",
   "resource_estimate": {
     "cpu": "low",
