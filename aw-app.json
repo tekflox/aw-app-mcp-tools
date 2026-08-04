@@ -26,8 +26,7 @@
     "commands:install",
     "fs:workspace-data",
     "routes:register",
-    "ui:code",
-    "ui:slots:core.nav"
+    "ui:code"
   ],
   "contributes": {
     "system_clis": [
@@ -52,22 +51,18 @@
   "config_schema": {
     "type": "object",
     "properties": {
-      "playwright_cdp_endpoint": {
-        "type": "string",
-        "default": "http://aw-app-browser:9223",
-        "description": "CDP endpoint used by Playwright MCP for the shared AW browser from inside the MCP Gateway container."
-      },
-      "tool_playwright_enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Playwright",
-        "description": "Shared-browser Playwright MCP tools (browser_navigate, browser_click, browser_snapshot, ...). Disabling removes them from the MCP Gateway's tools/list on the next save."
-      },
-      "tool_echo_enabled": {
-        "type": "boolean",
-        "default": true,
-        "title": "Echo (test tool)",
-        "description": "Temporary test tool for trying the enable/disable toggle end to end \u2014 safe to disable or remove."
+      "mcpServers": {
+        "type": "object",
+        "title": "MCP servers",
+        "description": "Written verbatim to this app's mcp.json \u2014 add, remove, or edit any MCP tool definition here (same shape as a .mcp.json's mcpServers). Ships with Playwright pre-configured for the shared AW browser.",
+        "default": {
+          "playwright": {
+            "enabled": true,
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@playwright/mcp@0.0.77", "--cdp-endpoint", "http://aw-app-browser:9223"]
+          }
+        }
       }
     },
     "required": []

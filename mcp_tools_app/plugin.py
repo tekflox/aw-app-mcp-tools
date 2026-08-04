@@ -14,32 +14,15 @@ DEFAULT_CDP_ENDPOINT = "http://aw-app-browser:9223"
 
 def build_mcp_servers(config: dict) -> dict:
     """The ``mcpServers`` object this app's own root mcp.json should
-    contain, computed from config — the per-tool enable/disable toggles
-    (``tool_<name>_enabled``) plus playwright_cdp_endpoint. This exact file
-    is what aw-mcp-gateway's app-scan reads directly (ADR "aw-app-mcp-tools
-    contributes mcp.json"), so disabling a tool here means it's gone from
-    the gateway's tools/list after the next reload — not just hidden."""
+    contain — taken verbatim from ``config["mcpServers"]``. This app's
+    settings panel IS a raw JSON editor over this exact object (see
+    JsonConfigEditor in aw-workspace-ui), so whatever the user adds,
+    removes, or edits there is what aw-mcp-gateway's app-scan reads on the
+    next reload (ADR "aw-app-mcp-tools contributes mcp.json") — not just a
+    fixed enable/disable toggle over a hardcoded tool set."""
     config = config or {}
-    servers: dict = {}
-
-    if config.get("tool_playwright_enabled", True):
-        cdp_endpoint = config.get("playwright_cdp_endpoint") or DEFAULT_CDP_ENDPOINT
-        servers["playwright"] = {
-            "enabled": True,
-            "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "@playwright/mcp@0.0.77", "--cdp-endpoint", str(cdp_endpoint)],
-        }
-
-    if config.get("tool_echo_enabled", True):
-        servers["mcp-tools-echo"] = {
-            "enabled": True,
-            "type": "stdio",
-            "command": "python3",
-            "args": ["-m", "mcp_tools_app.echo_server"],
-        }
-
-    return servers
+    servers = config.get("mcpServers")
+    return dict(servers) if isinstance(servers, dict) else {}
 
 
 def write_mcp_json(package_dir: str, config: dict) -> dict:
@@ -59,8 +42,6 @@ class McpToolsAppPlugin:
             manifest = json.load(f)
 
         config = getattr(ctx, "config", {}) or {}
-        cdp_endpoint = config.get("playwright_cdp_endpoint") or DEFAULT_CDP_ENDPOINT
-        os.environ["AW_PLAYWRIGHT_CDP_ENDPOINT"] = str(cdp_endpoint)
 
         installed = []
         for cli in manifest.get("contributes", {}).get("system_clis", []):
@@ -74,20 +55,18 @@ class McpToolsAppPlugin:
         ctx.routes.register(routes_mod.build_routes())
 
         log.info(
-            "aw-app-mcp-tools activated: installed %s (cdp_endpoint=%s), "
-            "mcp.json servers=%s, routes mounted",
-            installed, cdp_endpoint, list(mcp_doc["mcpServers"]),
+            "aw-app-mcp-tools activated: installed %s, mcp.json servers=%s, routes mounted",
+            installed, list(mcp_doc["mcpServers"]),
         )
 
     async def on_config_saved(self, ctx) -> None:
-        """Regenerate mcp.json from the newly-saved config (tool toggles /
-        CDP endpoint). aw-workspace's save_app_config calls this BEFORE
-        telling the MCP Gateway to /reload — see this app's
-        contributes.mcp.reload_on_save — so the gateway always scans the
-        file this write just produced, never a stale one."""
+        """Regenerate mcp.json from the newly-saved config (the raw
+        mcpServers JSON the settings panel edits). aw-workspace's
+        save_app_config calls this BEFORE telling the MCP Gateway to
+        /reload — see this app's contributes.mcp.reload_on_save — so the
+        gateway always scans the file this write just produced, never a
+        stale one."""
         config = getattr(ctx, "config", {}) or {}
-        cdp_endpoint = config.get("playwright_cdp_endpoint") or DEFAULT_CDP_ENDPOINT
-        os.environ["AW_PLAYWRIGHT_CDP_ENDPOINT"] = str(cdp_endpoint)
         mcp_doc = write_mcp_json(ctx.package_dir, config)
         log.info("aw-app-mcp-tools config saved: mcp.json servers=%s", list(mcp_doc["mcpServers"]))
 

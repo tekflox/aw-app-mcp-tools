@@ -11,40 +11,41 @@ sys.path.insert(0, str(ROOT))
 
 from mcp_tools_app.plugin import McpToolsAppPlugin, build_mcp_servers, write_mcp_json  # noqa: E402
 
-
-def test_build_mcp_servers_both_tools_enabled_by_default():
-    servers = build_mcp_servers({})
-    assert set(servers) == {"playwright", "mcp-tools-echo"}
-    assert servers["playwright"]["command"] == "npx"
-    assert "http://aw-app-browser:9223" in servers["playwright"]["args"]
-    assert servers["mcp-tools-echo"]["command"] == "python3"
-    assert servers["mcp-tools-echo"]["args"] == ["-m", "mcp_tools_app.echo_server"]
-
-
-def test_build_mcp_servers_playwright_disabled():
-    servers = build_mcp_servers({"tool_playwright_enabled": False})
-    assert "playwright" not in servers
-    assert "mcp-tools-echo" in servers
+PLAYWRIGHT_DEFAULT = {
+    "playwright": {
+        "enabled": True,
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@0.0.77", "--cdp-endpoint", "http://aw-app-browser:9223"],
+    },
+}
 
 
-def test_build_mcp_servers_echo_disabled():
-    servers = build_mcp_servers({"tool_echo_enabled": False})
-    assert "playwright" in servers
-    assert "mcp-tools-echo" not in servers
+def test_build_mcp_servers_returns_config_mcp_servers_verbatim():
+    servers = build_mcp_servers({"mcpServers": PLAYWRIGHT_DEFAULT})
+    assert servers == PLAYWRIGHT_DEFAULT
 
 
-def test_build_mcp_servers_both_disabled_yields_no_servers():
-    servers = build_mcp_servers({"tool_playwright_enabled": False, "tool_echo_enabled": False})
-    assert servers == {}
+def test_build_mcp_servers_empty_config_yields_no_servers():
+    # No default-merging here — that's aw-workspace's config_with_defaults
+    # job before config ever reaches this function.
+    assert build_mcp_servers({}) == {}
+    assert build_mcp_servers({"mcpServers": {}}) == {}
 
 
-def test_build_mcp_servers_uses_custom_cdp_endpoint():
-    servers = build_mcp_servers({"playwright_cdp_endpoint": "http://custom:9999"})
-    assert "http://custom:9999" in servers["playwright"]["args"]
+def test_build_mcp_servers_lets_user_add_an_arbitrary_tool():
+    config = {
+        "mcpServers": {
+            **PLAYWRIGHT_DEFAULT,
+            "my-custom-tool": {"type": "stdio", "command": "my-tool", "args": []},
+        }
+    }
+    servers = build_mcp_servers(config)
+    assert set(servers) == {"playwright", "my-custom-tool"}
 
 
 def test_write_mcp_json_writes_package_dir_mcp_json(tmp_path):
-    write_mcp_json(str(tmp_path), {"tool_echo_enabled": False})
+    write_mcp_json(str(tmp_path), {"mcpServers": PLAYWRIGHT_DEFAULT})
     written = json.loads((tmp_path / "mcp.json").read_text())
     assert set(written["mcpServers"]) == {"playwright"}
 
@@ -65,7 +66,7 @@ def _fake_ctx(tmp_path, config):
 
 def test_activate_writes_mcp_json_from_config(tmp_path):
     plugin = McpToolsAppPlugin()
-    ctx = _fake_ctx(tmp_path, {"tool_echo_enabled": False})
+    ctx = _fake_ctx(tmp_path, {"mcpServers": PLAYWRIGHT_DEFAULT})
     _async(plugin.activate(ctx))
     written = json.loads((tmp_path / "mcp.json").read_text())
     assert set(written["mcpServers"]) == {"playwright"}
@@ -73,12 +74,16 @@ def test_activate_writes_mcp_json_from_config(tmp_path):
 
 def test_on_config_saved_rewrites_mcp_json_to_match_new_config(tmp_path):
     plugin = McpToolsAppPlugin()
-    ctx = _fake_ctx(tmp_path, {})
+    ctx = _fake_ctx(tmp_path, {"mcpServers": PLAYWRIGHT_DEFAULT})
     _async(plugin.activate(ctx))
-    assert set(json.loads((tmp_path / "mcp.json").read_text())["mcpServers"]) == \
-        {"playwright", "mcp-tools-echo"}
+    assert set(json.loads((tmp_path / "mcp.json").read_text())["mcpServers"]) == {"playwright"}
 
-    ctx.config = {"tool_playwright_enabled": False}
+    ctx.config = {
+        "mcpServers": {
+            **PLAYWRIGHT_DEFAULT,
+            "extra": {"type": "stdio", "command": "extra-tool", "args": []},
+        }
+    }
     _async(plugin.on_config_saved(ctx))
     written = json.loads((tmp_path / "mcp.json").read_text())
-    assert set(written["mcpServers"]) == {"mcp-tools-echo"}
+    assert set(written["mcpServers"]) == {"playwright", "extra"}

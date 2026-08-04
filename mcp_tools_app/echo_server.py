@@ -1,8 +1,7 @@
-"""Minimal stdio MCP server — a trivial "echo" tool used to exercise (and
-demo) the per-tool enable/disable toggle in this app's settings (see
-plugin.py's ``tool_echo_enabled`` config field). Not meant to ship
-long-term — safe to disable or delete once the toggle feature itself is
-verified.
+"""Minimal stdio MCP server — a trivial "echo" tool demonstrating a second
+entry in this app's settings ``mcpServers`` JSON. Not enabled by default;
+add ``"mcp-tools-echo": {"command": "python3", "args": ["-m",
+"mcp_tools_app.echo_server"]}`` back into the settings JSON to try it.
 
 Same shape as aw-mcp-gateway's own bundled ``gateway/examples/echo_server.py``
 (deliberately — one obviously-correct reference implementation for a

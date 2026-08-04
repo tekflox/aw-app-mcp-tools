@@ -1,38 +1,40 @@
 # aw-app-mcp-tools
 
-AW decoupled app that installs MCP helper tools into a workspace. It ships
-two tools:
+AW decoupled app that installs MCP helper tools into a workspace. Ships with
+**`playwright`** pre-configured — runs `npx -y @playwright/mcp@0.0.77` from
+the MCP Gateway container, connected to the shared AW Browser CDP endpoint
+(`http://aw-app-browser:9223`).
 
-- **`playwright`** — runs `npx -y @playwright/mcp@0.0.77` from the MCP
-  Gateway container, connected to the shared AW Browser CDP endpoint
-  (`http://aw-app-browser:9223`, configurable).
-- **`mcp-tools-echo`** — a trivial `echo` tool (`mcp_tools_app/echo_server.py`)
-  used to exercise the enable/disable toggle below; safe to disable/remove.
+`mcp_tools_app/echo_server.py` is a trivial `echo` tool kept around as an
+example of a second stdio server — not enabled by default, add it back via
+the settings JSON (see below) if you want to exercise it.
 
-## mcp.json is generated, not static
+## Settings is a raw JSON editor over mcpServers — no fixed tool list
 
-This app's root `mcp.json` is what `aw-mcp-gateway`'s app-scan reads
-directly (`contributes.mcp.reload_on_save: true` in `aw-app.json`) — it is
-**regenerated from config**, not a fixed file:
+This app's config schema has exactly one field, `mcpServers` — the literal
+`mcpServers` object this app's `mcp.json` will contain. The Apps view gear
+icon opens a raw JSON editor (`JsonConfigEditor` in aw-workspace-ui) over
+this field, not a generated toggle form — so you can add, remove, or edit
+*any* MCP server definition, not just flip booleans on a fixed set shipped
+by this app.
+
+`mcp.json` (what `aw-mcp-gateway`'s app-scan reads directly —
+`contributes.mcp.reload_on_save: true` in `aw-app.json`) is **regenerated
+from config**, not a fixed file:
 
 - `McpToolsAppPlugin.activate()` writes it on install/start.
 - `McpToolsAppPlugin.on_config_saved()` rewrites it every time this app's
-  settings are saved, from two boolean toggles in its config schema —
-  `tool_playwright_enabled` / `tool_echo_enabled` — which render as the
-  gear icon's settings toggles in the Apps view (generic
-  config-schema-driven form, no custom UI needed). `playwright_cdp_endpoint`
-  is a third, string, field.
+  settings are saved — `build_mcp_servers(config)` just returns
+  `config["mcpServers"]` verbatim (see `tests/test_plugin.py`).
 - Right after `on_config_saved` returns, aw-workspace's `save_app_config`
   route calls the installed `mcp-gateway` app's `POST /reload` (its
   internal container address, not the public route) so the change takes
   effect immediately — no gateway restart, see aw-workspace's
   `_reload_mcp_gateway`.
 
-`mcp_tools_app/plugin.py`'s `build_mcp_servers(config)` is the pure function
-computing the `mcpServers` object from a config dict — see its tests
-(`tests/test_plugin.py`) for the exact enable/disable behavior. The
-checked-in `mcp.json` mirrors the all-enabled default so a fresh checkout
-(before the plugin ever activates) still has a working file to scan.
+The checked-in root `mcp.json` mirrors the config schema's default (just
+`playwright`) so a fresh checkout — before the plugin ever activates — still
+has a working file to scan.
 
 ## Development
 
