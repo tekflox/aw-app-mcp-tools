@@ -11,17 +11,35 @@ log = logging.getLogger("aw_apps.mcp_tools")
 
 DEFAULT_CDP_ENDPOINT = "http://aw-app-browser:9223"
 
+# Mirrors aw-app.json's config_schema.properties.mcpServers.default. That
+# JSON-Schema default is only applied by aw-workspace's API-response layer
+# (config_with_defaults in list_apps/get_app_config) — ctx.config at
+# activate() time is the raw stored config, un-defaulted. Without this
+# fallback, a fresh install (config == {}) writes an EMPTY mcp.json until
+# the user opens settings and hits Save once — found live 2026-08-04.
+DEFAULT_MCP_SERVERS = {
+    "playwright": {
+        "enabled": True,
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@playwright/mcp@0.0.77", "--cdp-endpoint", DEFAULT_CDP_ENDPOINT],
+    },
+}
+
 
 def build_mcp_servers(config: dict) -> dict:
     """The ``mcpServers`` object this app's own root mcp.json should
-    contain — taken verbatim from ``config["mcpServers"]``. This app's
-    settings panel IS a raw JSON editor over this exact object (see
-    JsonConfigEditor in aw-workspace-ui), so whatever the user adds,
-    removes, or edits there is what aw-mcp-gateway's app-scan reads on the
-    next reload (ADR "aw-app-mcp-tools contributes mcp.json") — not just a
-    fixed enable/disable toggle over a hardcoded tool set."""
+    contain — taken verbatim from ``config["mcpServers"]`` when present,
+    else the schema default. This app's settings panel IS a raw JSON
+    editor over this exact object (see JsonConfigEditor in
+    aw-workspace-ui), so whatever the user adds, removes, or edits there is
+    what aw-mcp-gateway's app-scan reads on the next reload (ADR
+    "aw-app-mcp-tools contributes mcp.json") — not just a fixed
+    enable/disable toggle over a hardcoded tool set."""
     config = config or {}
     servers = config.get("mcpServers")
+    if servers is None:
+        return dict(DEFAULT_MCP_SERVERS)
     return dict(servers) if isinstance(servers, dict) else {}
 
 

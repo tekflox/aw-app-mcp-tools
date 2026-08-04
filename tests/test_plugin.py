@@ -26,10 +26,16 @@ def test_build_mcp_servers_returns_config_mcp_servers_verbatim():
     assert servers == PLAYWRIGHT_DEFAULT
 
 
-def test_build_mcp_servers_empty_config_yields_no_servers():
-    # No default-merging here — that's aw-workspace's config_with_defaults
-    # job before config ever reaches this function.
-    assert build_mcp_servers({}) == {}
+def test_build_mcp_servers_missing_key_falls_back_to_default():
+    # ctx.config at activate() time is un-defaulted (config_with_defaults is
+    # an API-response-layer concern) — a fresh install's config is {}, so
+    # this fallback is what keeps a first install from shipping empty.
+    assert build_mcp_servers({}) == PLAYWRIGHT_DEFAULT
+
+
+def test_build_mcp_servers_explicit_empty_object_yields_no_servers():
+    # An explicit {} (the user cleared every server) is respected, distinct
+    # from a missing key.
     assert build_mcp_servers({"mcpServers": {}}) == {}
 
 
@@ -67,6 +73,16 @@ def _fake_ctx(tmp_path, config):
 def test_activate_writes_mcp_json_from_config(tmp_path):
     plugin = McpToolsAppPlugin()
     ctx = _fake_ctx(tmp_path, {"mcpServers": PLAYWRIGHT_DEFAULT})
+    _async(plugin.activate(ctx))
+    written = json.loads((tmp_path / "mcp.json").read_text())
+    assert set(written["mcpServers"]) == {"playwright"}
+
+
+def test_activate_with_fresh_empty_config_still_ships_playwright(tmp_path):
+    # Regression: a fresh install's ctx.config is {} (un-defaulted) — must
+    # not write an empty mcp.json.
+    plugin = McpToolsAppPlugin()
+    ctx = _fake_ctx(tmp_path, {})
     _async(plugin.activate(ctx))
     written = json.loads((tmp_path / "mcp.json").read_text())
     assert set(written["mcpServers"]) == {"playwright"}
