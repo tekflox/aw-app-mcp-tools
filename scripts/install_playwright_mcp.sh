@@ -4,7 +4,7 @@ set -euo pipefail
 APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AW_HOME="${AW_WORKSPACE_HOME:-$HOME/.aw-workspace}"
 AW_BIN_DIR="$AW_HOME/bin"
-APP_DATA_DIR="$AW_HOME/apps/mcp-tools"
+APP_DATA_DIR="$AW_HOME/data/mcp-tools"
 MCP_CONFIG="$APP_DATA_DIR/mcp.json"
 
 mkdir -p "$AW_BIN_DIR" "$APP_DATA_DIR"

@@ -16,7 +16,7 @@ class McpToolsInstallerTest(unittest.TestCase):
     def test_install_playwright_mcp_runs_script_with_cdp_endpoint(self, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout="Playwright MCP config installed at /home/test/.aw-workspace/apps/mcp-tools/mcp.json\n",
+            stdout="Playwright MCP config installed at /home/test/.aw-workspace/data/mcp-tools/mcp.json\n",
             stderr="",
         )
 
