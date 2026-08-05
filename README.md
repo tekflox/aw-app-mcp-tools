@@ -1,49 +1,22 @@
-# aw-app-mcp-tools
+# MCP Tools
 
-AW decoupled app that installs MCP helper tools into a workspace. Ships with
-**`playwright`** pre-configured — runs `npx -y @playwright/mcp@0.0.77` from
-the MCP Gateway container, connected to the shared AW Browser CDP endpoint
-(`http://aw-app-browser:9223`).
+MCP Tools helps an AW Workspace manage tool connections that agents can use. It starts with a ready Playwright setup for browser automation and lets the workspace maintain tool definitions in one place.
 
-`mcp_tools_app/echo_server.py` is a trivial `echo` tool kept around as an
-example of a second stdio server — not enabled by default, add it back via
-the settings JSON (see below) if you want to exercise it.
+## What It Does
 
-## Settings is a raw JSON editor over mcpServers — no fixed tool list
+- Installs helper tooling for workspace agent integrations.
+- Provides a default Playwright tool connection for the shared browser.
+- Lets users edit tool definitions from the workspace UI.
+- Keeps tool configuration available for the workspace gateway to load.
 
-This app's config schema has exactly one field, `mcpServers` — the literal
-`mcpServers` object this app's `mcp.json` will contain. The Apps view gear
-icon opens a raw JSON editor (`JsonConfigEditor` in aw-workspace-ui) over
-this field, not a generated toggle form — so you can add, remove, or edit
-*any* MCP server definition, not just flip booleans on a fixed set shipped
-by this app.
+## Why Use It
 
-`mcp.json` (what `aw-mcp-gateway`'s app-scan reads directly —
-`contributes.mcp.reload_on_save: true` in `aw-app.json`) is **regenerated
-from config**, not a fixed file:
+Use this app when agents need extra tools beyond their terminal. It is useful for browser automation, shared tool setup, and keeping agent tool configuration editable without rebuilding the workspace.
 
-- `McpToolsAppPlugin.activate()` writes it on install/start.
-- `McpToolsAppPlugin.on_config_saved()` rewrites it every time this app's
-  settings are saved — `build_mcp_servers(config)` just returns
-  `config["mcpServers"]` verbatim (see `tests/test_plugin.py`).
-- Right after `on_config_saved` returns, aw-workspace's `save_app_config`
-  route calls the installed `mcp-gateway` app's `POST /reload` (its
-  internal container address, not the public route) so the change takes
-  effect immediately — no gateway restart, see aw-workspace's
-  `_reload_mcp_gateway`.
+## How To Use It
 
-The checked-in root `mcp.json` mirrors the config schema's default (just
-`playwright`) so a fresh checkout — before the plugin ever activates — still
-has a working file to scan.
+Install the app with the workspace gateway enabled. Open the app UI to review or adjust tool definitions. Once saved, agents can use the available tools from their normal sessions.
 
-## Development
+## What It Delivers
 
-```bash
-python -m pytest tests -q
-cd ui && npm run build
-python -m mcp_tools_app
-```
-
-Pushes to `master` call `tekflox/aw-marketplace`'s reusable app release
-workflow, which validates the manifest/tests, tags a release, and opens the
-marketplace sync PR.
+The app gives AW Workspace a configurable tool layer for agents. It makes useful integrations easier to add, inspect, and maintain.
