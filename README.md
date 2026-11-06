@@ -20,3 +20,5 @@ Install the app with the workspace gateway enabled. Open the app UI to review or
 ## What It Delivers
 
 The app gives AW Workspace a configurable tool layer for agents. It makes useful integrations easier to add, inspect, and maintain.
+
+<!-- fleet migration B4: follow-up no-op to prove the comment + workflow_run merge paths -->
